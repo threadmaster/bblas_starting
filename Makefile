@@ -19,10 +19,15 @@ lbstime:
 clean:
 	cd serial && $(MAKE) clean
 	cd lbstime && $(MAKE) clean
+	rm *.o
+	touch *.f90
 
 pristine:
 	cd serial && $(MAKE) pristine 
 	cd lbstime && $(MAKE) pristine
+	rm *.o	
+	rm driver
+	touch *.f90
 
 #This next target get "made" every time
 .PHONY: serial lbstime
