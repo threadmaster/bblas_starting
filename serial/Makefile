@@ -8,7 +8,7 @@ vvm.o : vvm.c
 	$(CC) $(CFLAGS) -c vvm.c
 
 mmm.o : mmm.c
-	$(CC) -DSTRIP8 $(CFLAGS)  -c mmm.c
+	$(CC) $(CFLAGS)  -c mmm.c
 
 lib: vvm.o mmm.o 
 	ar -rc libserial_bblas.a vvm.o mmm.o 
