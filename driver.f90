@@ -1,6 +1,5 @@
 program driver 
 
-use array
 integer :: NDIM
 
 real (kind=8) :: wall_start, wall_end
@@ -14,6 +13,9 @@ real (kind=8) :: cputime
 external walltime, cputime
 
 character (len=8) :: carg1, carg2, carg3
+
+real (kind=8), dimension(:), allocatable :: veca, vecb
+real (kind=8), dimension(:,:), allocatable :: matrixa, matrixb, matrixc
 
 !modified to use command line arguments
 
@@ -44,7 +46,8 @@ do i = 1, NDIM
      vecb(i) = 1.0 / sqrt( dble(NDIM))
 enddo
 
-call zeromat( NDIM );
+matrixa = 0.0
+matrixb = 0.0
 
 call vvm(NDIM, veca, vecb, matrixa);
 call vvm(NDIM, veca, vecb, matrixb);

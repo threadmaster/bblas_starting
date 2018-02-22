@@ -4,4 +4,4 @@ F90 = gfortran
 CC  = gcc
 FFLAGS = -O2
 CFLAGS = -O2
-LDLIBS = -L./serial -L./lbstime -lserial_blas -llbs_time
+LDLIBS = -L./serial -lserial_bblas -L./lbstime -llbstime
