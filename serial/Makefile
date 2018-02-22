@@ -5,10 +5,10 @@ include ../Makefile.inc
 all: lib
 
 vvm.o : vvm.c
-	$(CC)  -c vvm.c
+	$(CC) $(CFLAGS) -c vvm.c
 
 mmm.o : mmm.c
-	$(CC)  -c mmm.c
+	$(CC) -DSTRIP8 $(CFLAGS)  -c mmm.c
 
 lib: vvm.o mmm.o 
 	ar -rc libserial_bblas.a vvm.o mmm.o 
@@ -20,3 +20,6 @@ clean :
 	rm *.o
 	touch *.c
 
+pristine:
+	make clean
+	rm *.a

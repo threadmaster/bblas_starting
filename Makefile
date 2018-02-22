@@ -16,4 +16,13 @@ serial:
 lbstime: 
 	cd lbstime && $(MAKE)
 
+clean:
+	cd serial && $(MAKE) clean
+	cd lbstime && $(MAKE) clean
 
+pristine:
+	cd serial && $(MAKE) pristine 
+	cd lbstime && $(MAKE) pristine
+
+#This next target get "made" every time
+.PHONY: serial lbstime

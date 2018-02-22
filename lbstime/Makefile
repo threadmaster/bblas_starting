@@ -20,3 +20,6 @@ clean :
 	rm *.o
 	touch *.c
 
+pristine:
+	make clean
+	rm *.a
