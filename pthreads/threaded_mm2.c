@@ -7,7 +7,7 @@
 #define NTHREADS ROWS*COLUMNS 
 
 
-void *thread_function();
+void *mmm_thread_worker();
 
 double *A, *B, *C;
 
@@ -68,7 +68,7 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
                 thread_args->Bptr = B;
                 thread_args->Cptr = C;
 
-                pthread_create( thread_id+i, NULL, &thread_function, thread_args );
+                pthread_create( thread_id+i, NULL, &mmm_thread_worker, thread_args );
             }
         }
 
@@ -82,8 +82,8 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
 
     int main()
     {
-        pthread_t *thread_id;
-        struct args *thread_args;
+    //    pthread_t *thread_id;
+    //    struct args *thread_args;
         int i, j;
         double trace;
 
@@ -91,7 +91,7 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
         B =  ( double * ) malloc( NTHREADS * sizeof(double) );
         C =  ( double * ) malloc( NTHREADS * sizeof(double) );
 
-        thread_id = (pthread_t *) malloc (NTHREADS * sizeof(pthread_t));
+     //   thread_id = (pthread_t *) malloc (NTHREADS * sizeof(pthread_t));
 
         /* Fill A and B matrices */
 
@@ -155,6 +155,32 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
         mmm( 6, ROWS, A, B, C );  
     }
 
+       
+       void *mmm_thread_worker( struct args *thread_args  ) {
+
+       int i, j, k;
+       double val;
+       int rowStart, rowStop, N; 
+       double *A, *B, *C;
+        
+       N        =  thread_args->N;
+       rowStart =  thread_args->startRow;
+       rowStop  =  thread_args->stopRow; 
+       A        =  thread_args->Aptr;
+       B        =  thread_args->Bptr;
+       C        =  thread_args->Cptr;
+
+       for (i=rowStart;i<rowStop;i++) {
+           for (j=0;j<N;j++) {
+               *(C+(i*N+j))=0.0;
+               for (k=0;k<N;k++) {
+                   *(C+(i*N+j)) += *(A+(i*N+k)) * *(B+(k*N+j));
+               }
+           }  
+       } 
+
+     }
+     
     /*
        void *thread_function( struct args *thread_args  )
        {
