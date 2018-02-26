@@ -26,23 +26,39 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
     // This progran has to break up the data, spawn the processes, gather the results, and 
     // clean up after itself.
 
-    // if thera are fewer dimensions than threads, do a simple matrix multiplication.
 
     int *numberOfRows;
     int startRow, stopRow;
     pthread_t *thread_id;
     struct args *thread_args;
 
-    // Malloc an array to keep up with thread id's for each thread
-    thread_id = (pthread_t *) malloc (NTHREADS * sizeof(pthread_t));
 
+    // if there are fewer dimensions than threads, do a simple matrix multiplication.
     if ( matrixDimension < numThreads ) {
-        printf("Do normal matrix multipy here.");
+       for (int i=0;i<matrixDimension;i++) {
+           for (int j=0;j<matrixDimension;j++) {
+               *(C+(i*matrixDimension+j))=0.0;
+               for (int  k=0;k<matrixDimension;k++) {
+                   *(C+(i*matrixDimension+j)) += *(A+(i*matrixDimension+k)) * *(B+(k*matrixDimension+j));
+               }
+           }  
+       } 
     }
-    else {
+
+    else { 
+
+    /* 
+     * Now the parallel work begins.  The process is to first determine how to break
+     *  up the matrix work equitably across the threads.  Once this is done the struct is filled with
+     *  the information and a thread is started using the information.  Other than the size of the
+     *  matrices and the rows to be processed, only the pointers to the locations in memory of the matrices
+     *  are passed.
+     */ 
+
+        // Malloc an array to keep up with thread id's for each thread
+        thread_id = (pthread_t *) malloc (NTHREADS * sizeof(pthread_t));
 
         // Malloc an array to keep up with how many rows to work on in each thread
-
         numberOfRows = ( int * ) malloc( NTHREADS * sizeof(int) );
 
         for (int i=0; i<numThreads; i++ ){
@@ -75,6 +91,8 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
           pthread_join( *(thread_id+i), NULL); 
         }
 
+        free(numberOfRows);
+        free(thread_id);
     }
 
     }
