@@ -35,4 +35,4 @@ pristine:
 	touch *.f90
 
 #This next target get "made" every time
-.PHONY: serial lbstime
+.PHONY: serial pthreads lbstime
