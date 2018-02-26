@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-#define ROWS 4 
-#define COLUMNS 4 
+#define ROWS 4000 
+#define COLUMNS 4000 
 #define NTHREADS ROWS*COLUMNS 
 
 
@@ -75,19 +75,7 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
           pthread_join( *(thread_id+i), NULL); 
         }
 
-        printf("Matrix multiply should be done.");
-
-        for (int i=0; i<matrixDimension; i++) {
-          for (int j=0; j<matrixDimension; j++ ) 
-            printf(" %f ", *(C+i*matrixDimension+j) );
-          printf("\n");
-        }
-
-
     }
-
-
-
 
     }
 
@@ -120,52 +108,26 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
             }
         }
 
-        /* 
+        mmm( 8, ROWS, A, B, C );  
 
-           for(i=0; i < ROWS; i++) {
-           for(j=0; j < COLUMNS; j++)
-           {
-           thread_args = ( struct args * )  malloc(sizeof( struct args));
-        //         printf("---->  %i  %i  %i  %i\n", NTHREADS, ROWS, i, j); 
-        thread_args->N   = ROWS;
-        thread_args->row = i;
-        thread_args->column = j; 
-        thread_args->Aptr = A;
-        thread_args->Bptr = B;
-        thread_args->Cptr = C;
+ 
+        printf("Matrix multiply should be done.\n");
 
-        pthread_create( thread_id+(ROWS*i+j), NULL, &thread_function, thread_args );
+        if (ROWS < 8 ) {
+        for (int i=0; i<ROWS; i++) {
+          for (int j=0; j<ROWS; j++ ) 
+            printf(" %f ", *(C+i*ROWS+j) );
+          printf("\n");
         }
         }
 
+        // compute sum of diagonal elements
+        trace = 0.0;
+        for (i=0; i<ROWS; i++) trace += *(C+(i*ROWS+i));
 
-        for (i=0; i < ROWS; i++) {
-        for(j=0; j < COLUMNS; j++)
-        {
-        pthread_join( thread_id[ROWS*i+j], NULL); 
-        }
-        }
+        printf("The dimension is %d and the trace is %f\n", ROWS, trace);
 
-        /* Now that all threads are complete I can print the final result.     */
-        /* Without the join I could be printing a value before all the threads */
-        /* have been completed.                                                */
-
-        /*  
-            trace = 0.0;
-            for(i=0; i < ROWS; i++) {
-            for(j=0; j < COLUMNS; j++)
-            {
-            if ( i == j ) { trace = trace + *(C+ROWS*i+j);}
-        //printf(" %f ", *(C+(ROWS*i+j)));
-        }
-        //printf("\n", NULL );
-        }
-        printf("\n\n Trace = %f\n\n ", trace );
-
-*/
-
-        mmm( 2, ROWS, A, B, C );  
-    }
+}        
 
        
        void *mmm_thread_worker( struct args *thread_args  ) {
@@ -191,36 +153,10 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
            }  
        } 
 
-     }
-     
-    /*
-       void *thread_function( struct args *thread_args  )
-       {
-       int k;
-       double val;
-       int row, column, veclen;
-       double *AMatrix, *BMatrix, *CMatrix;
-       int *numberOfRows;
-
-       veclen = thread_args->N;
-       row    = thread_args->row;
-       column = thread_args->column;
-       AMatrix  = thread_args->Aptr;
-       BMatrix  = thread_args->Bptr;
-       CMatrix  = thread_args->Cptr;
-
-       val = 0.0;
-       for (k=0;k<veclen;k++) {
-       val = val + *(AMatrix+(row*veclen+k)) * *(BMatrix+(column*veclen+k));
-       }
-    //   printf(" In Function --  %i  %i   %i   %f\n", veclen, row, column, val);
-
-     *(CMatrix+(row*veclen+column)) = val;
-
      free(thread_args);
      pthread_exit(NULL);
      }
-     */
+     
 
 
 
