@@ -7,12 +7,12 @@ real (kind=8) :: cpu_start, cpu_end
 real (kind=8) :: trace
 
 
-integer :: startval, stopval, stepval
+integer :: startval, stopval, stepval, nthreads
 real (kind=8) :: walltime
 real (kind=8) :: cputime 
 external walltime, cputime
 
-character (len=8) :: carg1, carg2, carg3
+character (len=8) :: carg1, carg2, carg3, carg4
 
 real (kind=8), dimension(:), allocatable :: veca, vecb
 real (kind=8), dimension(:,:), allocatable :: matrixa, matrixb, matrixc
@@ -22,12 +22,14 @@ real (kind=8), dimension(:,:), allocatable :: matrixa, matrixb, matrixc
 call get_command_argument(1, carg1)
 call get_command_argument(2, carg2)
 call get_command_argument(3, carg3)
+call get_command_argument(4, carg4)
 
 ! Use Fortran internal files to convert command line arguments to ints
 
 read (carg1,'(i8)') startval
 read (carg2,'(i8)') stopval
 read (carg3,'(i8)') stepval
+read (carg4,'(i8)') nthreads 
  
 do iter = startval, stopval, stepval
   
@@ -55,7 +57,7 @@ call vvm(NDIM, veca, vecb, matrixb);
 wall_start = walltime()
 cpu_start = cputime()
 
-call mmm(NDIM, matrixa, matrixb, matrixc);
+call mmm(nthreads, NDIM, matrixa, matrixb, matrixc);
 
 cpu_end = cputime()
 wall_end = walltime()

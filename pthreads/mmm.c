@@ -2,15 +2,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-#define ROWS 4000 
-#define COLUMNS 4000 
-#define NTHREADS ROWS*COLUMNS 
-
-
 void *mmm_thread_worker();
-
-double *A, *B, *C;
-
 
 struct args {
     int N; 
@@ -56,10 +48,10 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
      */ 
 
         // Malloc an array to keep up with thread id's for each thread
-        thread_id = (pthread_t *) malloc (NTHREADS * sizeof(pthread_t));
+        thread_id = (pthread_t *) malloc (numThreads * sizeof(pthread_t));
 
         // Malloc an array to keep up with how many rows to work on in each thread
-        numberOfRows = ( int * ) malloc( NTHREADS * sizeof(int) );
+        numberOfRows = ( int * ) malloc( numThreads * sizeof(int) );
 
         for (int i=0; i<numThreads; i++ ){
             *(numberOfRows+i) = matrixDimension / numThreads;
@@ -98,56 +90,6 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
     }
 
 
-    int main()
-    {
-    //    pthread_t *thread_id;
-    //    struct args *thread_args;
-        int i, j;
-        double trace;
-
-        A =  ( double * ) malloc( NTHREADS * sizeof(double) );
-        B =  ( double * ) malloc( NTHREADS * sizeof(double) );
-        C =  ( double * ) malloc( NTHREADS * sizeof(double) );
-
-     //   thread_id = (pthread_t *) malloc (NTHREADS * sizeof(pthread_t));
-
-        /* Fill A and B matrices */
-
-        for(i=0; i < ROWS; i++) {
-            for(j=0; j < COLUMNS; j++) {
-                if (i != j)  {
-                    *(A+(ROWS*i+j)) = 0.0; 
-                    *(B+(ROWS*i+j)) = 0.0; 
-                }
-                else {
-                    *(A+(ROWS*i+j)) = 1.0; 
-                    *(B+(ROWS*i+j)) = 1.0; 
-                }
-            }
-        }
-
-        mmm( 8, ROWS, A, B, C );  
-
- 
-        printf("Matrix multiply should be done.\n");
-
-        if (ROWS < 8 ) {
-        for (int i=0; i<ROWS; i++) {
-          for (int j=0; j<ROWS; j++ ) 
-            printf(" %f ", *(C+i*ROWS+j) );
-          printf("\n");
-        }
-        }
-
-        // compute sum of diagonal elements
-        trace = 0.0;
-        for (i=0; i<ROWS; i++) trace += *(C+(i*ROWS+i));
-
-        printf("The dimension is %d and the trace is %f\n", ROWS, trace);
-
-}        
-
-       
        void *mmm_thread_worker( struct args *thread_args  ) {
 
        int i, j, k;
