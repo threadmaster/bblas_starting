@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-#define ROWS 1000 
-#define COLUMNS 1000 
+#define ROWS 4 
+#define COLUMNS 4 
 #define NTHREADS ROWS*COLUMNS 
 
 
@@ -71,6 +71,18 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
                 pthread_create( thread_id+i, NULL, &mmm_thread_worker, thread_args );
             }
         }
+        for(int i=0; i < numThreads ; i++) {
+          pthread_join( *(thread_id+i), NULL); 
+        }
+
+        printf("Matrix multiply should be done.");
+
+        for (int i=0; i<matrixDimension; i++) {
+          for (int j=0; j<matrixDimension; j++ ) 
+            printf(" %f ", *(C+i*matrixDimension+j) );
+          printf("\n");
+        }
+
 
     }
 
@@ -152,7 +164,7 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
 
 */
 
-        mmm( 6, ROWS, A, B, C );  
+        mmm( 2, ROWS, A, B, C );  
     }
 
        
