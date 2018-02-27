@@ -22,7 +22,7 @@ real (kind=8), dimension(:,:), allocatable :: matrixa, matrixb, matrixc
 !This portion of code is ONLY used for verifying the accuracy of the code using
 !the matrix and matrix inverse stored on the class website.
 
-!Download the files using curl
+!Download the files from theochem using curl (don't store these on anvil!)
 call system("curl -s -o matrixa.dat --url http://theochem.mercer.edu/csc435/data/matrixa.dat")
 call system("curl -s -o matrixb.dat --url http://theochem.mercer.edu/csc435/data/matrixb.dat")
 
@@ -104,8 +104,8 @@ enddo
 
 !print *,  "The trace is ", trace
 
-mflops  = dble(NDIM)**3/ (cpu_end-cpu_start) / 1.0e6
-mflops2 = dble(NDIM)**3/ (wall_end-wall_start)/ 1.0e6
+mflops  = 2*dble(NDIM)**3/ (cpu_end-cpu_start) / 1.0e6
+mflops2 = 2*dble(NDIM)**3/ (wall_end-wall_start)/ 1.0e6
  
 print *, NDIM, trace, cpu_end-cpu_start, wall_end-wall_start,  mflops, mflops2
 
