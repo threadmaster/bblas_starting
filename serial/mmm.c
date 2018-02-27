@@ -10,6 +10,10 @@ extern "C" {
 
 void mmm_( int *threads, int *len,  double *a, double *b, double *c ){
 
+/* in serial code, *threads not used. It is retained here so the code can be called
+ * identically to the threaded methods.
+ */
+
     int i, j, k;
     int veclen = *len;
     int mod;

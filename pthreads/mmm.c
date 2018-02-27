@@ -1,3 +1,13 @@
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+    void mmm_( int *threads, int *len,  double *a, double *b, double*c );
+#ifdef __cplusplus
+    }
+#endif
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -13,12 +23,14 @@ struct args {
     double *Cptr;
 };
 
-void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C ){
+void mmm_( int *threads, int *len, double *A, double *B, double *C ){
 
     // This function has to break up the data, spawn the processes, gather the results, and 
     // clean up after itself.
 
 
+    int numThreads = *threads;
+    int matrixDimension = *len;
     int *numberOfRows;
     int startRow, stopRow;
     pthread_t *thread_id;
