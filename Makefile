@@ -8,7 +8,7 @@ driver: driver.o serial lbstime pthreads
 	$(F90) driver.o -o driver $(LDLIBS)  
 
 driver.o: driver.f90
-	$(F90) $(FFLAGS) -DACCURACY  driver.f90 -c  
+	$(F90) $(FFLAGS) driver.f90 -c  
 
 serial: 
 	cd serial && $(MAKE)

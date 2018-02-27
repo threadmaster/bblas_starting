@@ -83,15 +83,16 @@ enddo
 matrixa = 0.0
 matrixb = 0.0
 
-call vvm(NDIM, veca, vecb, matrixa);
-call vvm(NDIM, veca, vecb, matrixb);
+call vvm(NDIM, veca, vecb, matrixa)
+call vvm(NDIM, veca, vecb, matrixb)
 
 #endif
 
 wall_start = walltime()
 cpu_start = cputime()
 
-call mmm(nthreads, NDIM, matrixa, matrixb, matrixc);
+print *, "Using ", numthreads, " threads."
+call mmm(nthreads, NDIM, matrixa, matrixb, matrixc)
 
 cpu_end = cputime()
 wall_end = walltime()
