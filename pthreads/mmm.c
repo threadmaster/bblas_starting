@@ -52,7 +52,8 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
 
         // Malloc an array to keep up with how many rows to work on in each thread
         numberOfRows = ( int * ) malloc( numThreads * sizeof(int) );
-
+ 
+        // Here we detemine the number of rows over which each thread will work
         for (int i=0; i<numThreads; i++ ){
             *(numberOfRows+i) = matrixDimension / numThreads;
         }
@@ -60,8 +61,6 @@ void mmm( int numThreads, int matrixDimension, double *A, double *B, double *C )
             *(numberOfRows+i) = *(numberOfRows+i) + 1;
         }
 
-        //        for (int i=0; i<numThreads; i++ ){
-        //           printf("Thread %d will handle %d rows\n", i, *(numberOfRows+i) );
 
         stopRow=0;
         for(int i=0; i < numThreads ; i++) {
