@@ -14,7 +14,6 @@ void mmm_( int *threads, int *len,  double *a, double *b, double *c ){
 
     int i, j, k;
     int veclen = *len;
-    int mod;
 
 // Set the number of threads to use here
 
