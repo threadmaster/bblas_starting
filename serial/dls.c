@@ -32,7 +32,7 @@ int strictlyDiagonallyDominant( int N, double *a ) {
 }
         
 
-void dls_( int *threads, int *len,  double *a, double *b, double *c ){
+void dls_( int *threads, int *len,  double *a, double *b, double *x ){
 
 /* in serial code, *threads not used. It is retained here so the code can be called
  * identically to the threaded methods.
@@ -40,13 +40,14 @@ void dls_( int *threads, int *len,  double *a, double *b, double *c ){
 
 
     int i, j, k, N, iPivot;
+    int singular;
     struct pairs{
        int from;
        int to; 
     };
     pairs *swaps;
-    double pivot, tmp;
-
+    double pivot, tmp, *y;
+    double ZERO = 0.0;
    
     N = *len;
  
@@ -86,13 +87,65 @@ void dls_( int *threads, int *len,  double *a, double *b, double *c ){
 
        
     }       
-          
-
+      
     
     else {
 
-       // Do Row Reductions 
-      
+       // Since we know the matrix is diagonally dominant, verify
+       // that none of the pivot elements is equal to zero
+
+       singular = 1 
+       while ( i<N  && singular ) {
+          singular = *(a+i*N+i) == ZERO;   
+          i++;
+       }
+    
+       if ( singular ) {
+         puts( " *** MATRIX A IS SINGULAR *** ");
+         puts( "    -- EXECUTION HALTED --");
+         exit(1);
+       }
+
+       // Now we know we that have a diagonally dominant matrix that is
+       // not singular -- so it sould be possible to do the LU factorization
+
+       for (k=0; k<N-1; k++) {
+          for (rows=k+1;rows<N;rows++) {
+             *(a+rows*N+k) = *(a+rows*N+k) / *(a+k*rows+k);
+             *(a+rows*N+rows) = *(a*rows*N+rows) - *(a+rows*N+k) * *(a+k*N+rows);
+          }
+       }
+
+       // At this point the LU factorizaton should be done and we have to do two
+       // triangular back substitutions.  The solution to Ax=b is solved by first 
+       // solving Ly=b for y and then Ux=y for the solution vector x.
+
+       // Solving lower-triangular (Ly=b) first
+
+       y = malloc( N * sizeof(double) );
+       
+       *(y+0) = *(b+0) / *(a+0*N+0)
+       for (i=1;i<N;i++) {
+          sum = 0.0;
+          for (j=0;j<i-1;j++) {
+            sum+= *(a+i*N+j) * *(y+j);
+          }
+          *(y+i) = ( *(b+i) - sum ) / *(a+i*N+i);
+       }
+
+       // Now solve upper-triangular (Ux=y) using results from prior step
+
+       *(x+(N-1)) = *(x+(N-1)) / *(a+(N-1)*N+(N-1));
+       for (i=N-2;i>=0;i--} {
+          sum = 0.0;
+          for (j=i+1;j<N;j++) {
+            sum+= *(a+i*N*j) * *(x+j);
+          }
+          *(x+i) = ( *(y+i) - sum ) / *(a+i*N+i);
+       }
+ 
+       // At this point the solution to the system should be in vector x 
+     
 
     }
 
