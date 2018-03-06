@@ -39,14 +39,9 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
  */
 
 
-    int i, j, k, N, iPivot;
+    int i, j, k, N, u;
     int singular;
-    struct pairs{
-       int from;
-       int to; 
-    };
-    pairs *swaps;
-    double pivot, tmp, *y;
+    double pivotMax, tmp, *y;
     double ZERO = 0.0;
    
     N = *len;
@@ -57,15 +52,13 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
 
     if ( ! strictlyDiagonallyDominant( N, a ) ) {
  
-        // Do Row Interchanges
+        // Do Gaussian Elimination with Partial Pivoting 
         
-       swaps = malloc(N * sizeof(pairs));
-
        // Search for largest value in the column and swap the 
        // entire row containing that value with the current
        // pivot row.
-       for (i=0;i<N;i++) {
-          pivot = *(a+i*N+i);
+       for (k=0;k<N;k++) {
+          pivotMax = *(a+i*N+i);
           iPivot = i 
           for (k=i;k<N;k++) {
               if ( fabs(*(a+k*N+i)) > fabs(pivot) ) {
