@@ -6,15 +6,16 @@ extern "C" {
     }
 #endif
 
-/*  S E R I A L   C O D E  */
+#include <math.h>  
+#include <stdio.h>  
+#include <stdlib.h>
 
+/*  S E R I A L   C O D E  */
 
 int strictlyDiagonallyDominant( int N, double *a ) {
 
     double sum;
-    int i, testPassed, row, N;
-
-    N = *len;
+    int i, testPassed, row;
 
     testPassed = 1;
     row = 0;
@@ -40,8 +41,9 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
 
 
     int i, j, k, N, u;
-    int singular;
+    int singular, iPivot, rows;
     double pivotMax, tmp, *y;
+    double sum;
     double ZERO = 0.0;
     int *p;
    
@@ -61,7 +63,7 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
        // pivot row.
        for (k=0;k<N;k++) {
           pivotMax = *(a+k*N+k);
-          iPivot = k 
+          iPivot = k; 
           for (u=k;u<N;u++) {
               if ( fabs(*(a+u*N+k)) > fabs(pivotMax) ) {
                  pivotMax = *(a+u*N+k);
@@ -76,8 +78,42 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
                  *(a+k*N+j) = *(a+u*N+j);
                  *(a+u*N+j)=tmp;
               }
-              
           }
+          *(p+k) = iPivot;
+          if ( *(a+k*N+k) != ZERO ) {
+              for (rows=k+1;rows<N;rows++) {
+                 *(a+rows*N+k) = *(a+rows*N+k) / *(a+k*N+k);
+                 *(a+rows*N+rows) = *(a+rows*N+rows) - 
+                        *(a+rows*N+k) * *(a+k*N+rows);
+              }
+          }
+
+          else {
+
+             /* Handle the case of a zero pivot element, singular matrix */
+
+             printf( " *** MATRIX A IS SINGULAR *** \n");
+             printf( "    -- EXECUTION HALTED --\n");
+             exit(1);
+         }
+
+ 
+        // Copy b to x to preseve b 
+       
+        for (k=0; k<N; k++ ) 
+          *(x+k) = *(x+k);
+ 
+        // Do back substitution on c
+          
+        for (k=0; k<N-1; k++ ) {
+          tmp = *(x+k);
+          *(x+k) = *(x+ *(p+k));
+          *(x+ *(p+k)) = tmp;
+          for (j=k+1;j<N;j++) 
+            *(x+j)= *(x+j) - *(x+k) * *(a+N*j+k);  
+        } 
+
+       
        }
 
        
@@ -89,15 +125,15 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
        // Since we know the matrix is diagonally dominant, verify
        // that none of the pivot elements are equal to zero
 
-       singular = 1 
+       singular = 1; 
        while ( i<N  && singular ) {
           singular = *(a+i*N+i) == ZERO;   
           i++;
        }
     
        if ( singular ) {
-         puts( " *** MATRIX A IS SINGULAR *** ");
-         puts( "    -- EXECUTION HALTED --");
+         printf( " *** MATRIX A IS SINGULAR *** \n");
+         printf( "    -- EXECUTION HALTED -- \n");
          exit(1);
        }
 
@@ -107,7 +143,7 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
        for (k=0; k<N-1; k++) {
           for (rows=k+1;rows<N;rows++) {
              *(a+rows*N+k) = *(a+rows*N+k) / *(a+k*rows+k);
-             *(a+rows*N+rows) = *(a*rows*N+rows) - *(a+rows*N+k) * *(a+k*N+rows);
+             *(a+rows*N+rows) = *(a+rows*N+rows) - *(a+rows*N+k) * *(a+k*N+rows);
           }
        }
 
@@ -119,7 +155,7 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
 
        y = malloc( N * sizeof(double) );
        
-       *(y+0) = *(b+0) / *(a+0*N+0)
+       *(y+0) = *(b+0) / *(a+0*N+0);
        for (i=1;i<N;i++) {
           sum = 0.0;
           for (j=0;j<i-1;j++) {
@@ -131,7 +167,7 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
        // Now solve upper-triangular (Ux=y) using results from prior step
 
        *(x+(N-1)) = *(x+(N-1)) / *(a+(N-1)*N+(N-1));
-       for (i=N-2;i>=0;i--} {
+       for (i=N-2;i>=0;i--) {
           sum = 0.0;
           for (j=i+1;j<N;j++) {
             sum+= *(a+i*N*j) * *(x+j);
@@ -144,7 +180,6 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
 
     }
 
-#endif
 }
 
 
