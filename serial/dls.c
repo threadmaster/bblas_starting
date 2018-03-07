@@ -20,7 +20,7 @@ int strictlyDiagonallyDominant( int N, double *a ) {
     testPassed = 1;
     row = 0;
     sum = 0.0;
-    for (row=0;row<N;i++) { 
+    for (row=0;row<N;row++) { 
         if (testPassed) {
             sum = 0.0;
             for (i=0;i<N;i++) sum+=*(a+row*N+i);
@@ -28,6 +28,8 @@ int strictlyDiagonallyDominant( int N, double *a ) {
             testPassed = fabs(*(a+row*N+row)) > sum;
         }
     }
+
+    printf("-- diagonal dominance test completed, status = %d\n", testPassed);
 
     return testPassed;
 }
