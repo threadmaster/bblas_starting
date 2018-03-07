@@ -43,6 +43,7 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
     int singular;
     double pivotMax, tmp, *y;
     double ZERO = 0.0;
+    int *p;
    
     N = *len;
  
@@ -53,28 +54,29 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
     if ( ! strictlyDiagonallyDominant( N, a ) ) {
  
         // Do Gaussian Elimination with Partial Pivoting 
+       
         
        // Search for largest value in the column and swap the 
        // entire row containing that value with the current
        // pivot row.
        for (k=0;k<N;k++) {
-          pivotMax = *(a+i*N+i);
-          iPivot = i 
-          for (k=i;k<N;k++) {
-              if ( fabs(*(a+k*N+i)) > fabs(pivot) ) {
-                 pivot = *(a+k*N+i);
-                 iPivot = k;
+          pivotMax = *(a+k*N+k);
+          iPivot = k 
+          for (u=k;u<N;u++) {
+              if ( fabs(*(a+u*N+k)) > fabs(pivotMax) ) {
+                 pivotMax = *(a+u*N+k);
+                 iPivot = u;
               }
           }
        // If a greater pivot value was found, swap the rows.
-          if ( iPivot != i ) {
-              *(swaps+i) -> from = iPivot;
-              *(swaps+i) -> to   = i;
-              for (k=0;k<N;k++) {
-                 tmp = *(a+i*N+k);
-                 *(a+i*N+k) = *(a+iPivot*N+k);
-                 *(a+iPivot*N+k)=tmp;
+          if ( iPivot != k ) {
+              u = iPivot; 
+              for (j=k;j<N;j++) {
+                 tmp = *(a+k*N+j);
+                 *(a+k*N+j) = *(a+u*N+j);
+                 *(a+u*N+j)=tmp;
               }
+              
           }
        }
 
@@ -85,7 +87,7 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
     else {
 
        // Since we know the matrix is diagonally dominant, verify
-       // that none of the pivot elements is equal to zero
+       // that none of the pivot elements are equal to zero
 
        singular = 1 
        while ( i<N  && singular ) {
@@ -141,19 +143,6 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
      
 
     }
-
-
-// Normal Matrix Multiplication
-/*
-    for (i=0; i<veclen; i++) {
-        for (j=0; j<veclen; j++) {
-            *(c+(i*veclen+j)) = 0.0;
-            for (k=0;k<veclen;k++){
-                *(c+(i*veclen+j)) += *(a+(i*veclen+k)) * *(b+(k*veclen+j)); 
-            }
-        }
-    }
-*/
 
 #endif
 }
