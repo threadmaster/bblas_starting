@@ -14,10 +14,58 @@ external walltime, cputime
 
 character (len=8) :: carg1, carg2, carg3, carg4
 
-real (kind=8), dimension(:), allocatable :: veca, vecb
+real (kind=8), dimension(:), allocatable :: veca, vecb, vecx
 real (kind=8), dimension(:,:), allocatable :: matrixa, matrixb, matrixc
 
 #ifdef ACCURACY_TEST
+
+NDIM = 3 
+nthreads = 2
+
+#ifdef DLS_TEST
+
+print *, "Performing DLS Accuracy Test"
+!This portion of code is ONLY used for verifying the accuracy of the code using
+!the matrix, vector b, and solution vector x stored on the class website.
+
+!Download the files from theochem using curl (don't store these on anvil!)
+call system("curl -s -o linsolve_a.dat --url http://theochem.mercer.edu/csc435/data/linsolve_a_3x3.dat")
+call system("curl -s -o linsolve_b.dat --url http://theochem.mercer.edu/csc435/data/linsolve_b_3x3.dat")
+call system("curl -s -o linsolve_x.dat --url http://theochem.mercer.edu/csc435/data/linsolve_x_3x3.dat")
+
+print *, "Files loaded from theochem.mercer.edu"
+
+allocate ( matrixa(NDIM,NDIM), stat=ierr)
+allocate ( veca(NDIM), stat=ierr)
+allocate ( vecb(NDIM), stat=ierr)
+allocate ( vecx(NDIM), stat=ierr)
+
+open (unit=5,file="linsolve_a.dat",status="old")
+do i = 1, NDIM
+  do j = 1, NDIM
+     read(5,*) matrixa(j,i)
+  enddo
+enddo
+close(5)
+open (unit=5,file="linsolve_b.dat",status="old")
+do i = 1, NDIM
+   read(5,*) vecb(i)
+enddo
+close(5)
+open (unit=5,file="linsolve_x.dat",status="old")
+do i = 1, NDIM
+   read(5,*) veca(i)
+enddo
+close(5)
+
+print *, "Files read into program"
+
+! Delete the files from disk
+call system("rm linsolve_a.dat linsolve_b.dat linsolve_x.dat")
+
+print *, "Files deleted from disk."
+
+#else
 
 !This portion of code is ONLY used for verifying the accuracy of the code using
 !the matrix and matrix inverse stored on the class website.
@@ -48,6 +96,7 @@ close(5)
 
 ! Delete the files from disk
 call system("rm matrixa.dat matrixb.dat")
+#endif
 
 #else
 
@@ -99,15 +148,20 @@ call vvm(NDIM, veca, vecb, matrixb)
 wall_start = walltime()
 cpu_start = cputime()
 
-call mmm(nthreads, NDIM, matrixa, matrixb, matrixc)
+!call mmm(nthreads, NDIM, matrixa, matrixb, matrixc)
+call dls(nthreads, NDIM, matrixa, vecb, vecx)
 
 cpu_end = cputime()
 wall_end = walltime()
 
 trace = 0.0;
 
-do i=1, NDIM 
-     trace = trace + matrixc(i,i)
+!do i=1, NDIM 
+!     trace = trace + matrixc(i,i)
+!enddo
+
+do i=1, NDIM
+   print *, vecx(i), veca(i), vecx(i)-veca(i)
 enddo
 
 ! Calculate megaflops based on CPU time and Walltime
