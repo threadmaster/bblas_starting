@@ -125,6 +125,10 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
                 exit(1);
             }
 
+            }
+            // Now that we know we have reduced the matrices, start back
+            // substitution process to solve for vector x.
+
             // print A
             for (i=0;i<N;i++) {
                 for (j=0;j<N;j++) {
@@ -134,25 +138,43 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
             }
             printf("\n");
 
-            // Copy b to x to preseve b 
-        } 
-        for (k=0; k<N; k++ ) { 
-            *(x+k) = *(b+k);
-            printf( "k = %d,  p = %d\n", k, *(p+k));
-        }
-
-        // Do back substitution on c
+        /* We now need to arrange b so that it has undergone the 
+         * operations as the matrix a.  This will then form
+         * the vector y for the solution of Ux=y where U is the 
+         * upper-triangular matrix formed in the elimination process
+         * above. 
+         */
 
         for (k=0; k<N-1; k++ ) {
-            tmp = *(x+k);
-            printf( "k = %d,  p = %d\n", k, *(p+k));
-            *(x+k) = *(x+ *(p+k));
-            *(x+ *(p+k)) = tmp;
+            // Swap rows x with p(k) 
+            tmp = *(b+k);
+            *(b+k) = *(b+ *(p+k));
+            *(b+ *(p+k)) = tmp;
+            
             for (j=k+1;j<N;j++) 
-                *(x+j)= *(x+j) - *(x+k) * *(a+N*j+k);  
+                *(b+j)= *(b+j) - *(b+k) * *(a+N*j+k);  
+        } 
+
+        // Now we can do the backward substitution to get the solution
+        // vector x
+     
+        *(b+N-1) = *(b+N-1) / *(a+N*(N-1)+(N-1));
+        for (i=N-2;i>=0;i--){
+           tmp = 0.0;
+           for (j=i+1;j<N;j++) {
+             tmp = tmp + *(a+i*N+j) * *(b+j);
+           }
+           *(b+i) = ( *(b+i) - tmp ) / *(a+i*N+i); 
+        }
+
+        for (i=0;i<N;i++) *(x+i) = *(b+i);
+        printf("Solutions vector\n");
+        for (k=0; k<N; k++ ) {
+            printf( "x[%d] = %f\n", k, *(x+k));
         } 
     }
 
+           
     else {
 
         // Since we know the matrix is diagonally dominant, verify
