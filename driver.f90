@@ -19,7 +19,7 @@ real (kind=8), dimension(:,:), allocatable :: matrixa, matrixb, matrixc
 
 #ifdef ACCURACY_TEST
 
-NDIM = 3 
+NDIM = 4 
 nthreads = 2
 
 #ifdef DLS_TEST
@@ -29,9 +29,9 @@ print *, "Performing DLS Accuracy Test"
 !the matrix, vector b, and solution vector x stored on the class website.
 
 !Download the files from theochem using curl (don't store these on anvil!)
-call system("curl -s -o linsolve_a.dat --url http://theochem.mercer.edu/csc435/data/linsolve_a_3x3.dat")
-call system("curl -s -o linsolve_b.dat --url http://theochem.mercer.edu/csc435/data/linsolve_b_3x3.dat")
-call system("curl -s -o linsolve_x.dat --url http://theochem.mercer.edu/csc435/data/linsolve_x_3x3.dat")
+call system("curl -s -o linsolve_a.dat --url http://theochem.mercer.edu/csc435/data/linsolve_a_smdd.dat")
+call system("curl -s -o linsolve_b.dat --url http://theochem.mercer.edu/csc435/data/linsolve_b_smdd.dat")
+call system("curl -s -o linsolve_x.dat --url http://theochem.mercer.edu/csc435/data/linsolve_x_smdd.dat")
 
 print *, "Files loaded from theochem.mercer.edu"
 

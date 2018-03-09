@@ -194,41 +194,43 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
 
         // Now we know that we have a diagonally dominant matrix that is
         // not singular -- so it sould be possible to do the LU factorization
+        
 
         for (k=0; k<N-1; k++) {
             for (rows=k+1;rows<N;rows++) {
-                *(a+rows*N+k) = *(a+rows*N+k) / *(a+k*rows+k);
-                *(a+rows*N+rows) = *(a+rows*N+rows) - *(a+rows*N+k) * *(a+k*N+rows);
+                *(a+rows*N+k) = *(a+rows*N+k) / *(a+k*N+k);
+
+                for (rows2=k+1;rows2<N;rows2++) { 
+                    *(a+rows*N+rows2) = *(a+rows*N+rows2) - 
+                        *(a+rows*N+k) * *(a+k*N+rows2) ;
+                }
             }
         }
-
+        
         // At this point the LU factorizaton should be done and we have to do two
         // triangular back substitutions.  The solution to Ax=b is solved by first 
         // solving Ly=b for y and then Ux=y for the solution vector x.
 
         // Solving lower-triangular (Ly=b) first
 
-        y = malloc( N * sizeof(double) );
+        for (k=0; k<N-1; k++ ) {
+            for (j=k+1;j<N;j++) 
+                *(b+j)= *(b+j) - *(b+k) * *(a+N*j+k);  
+        } 
 
-        *(y+0) = *(b+0) / *(a+0*N+0);
-        for (i=1;i<N;i++) {
-            sum = 0.0;
-            for (j=0;j<i-1;j++) {
-                sum+= *(a+i*N+j) * *(y+j);
-            }
-            *(y+i) = ( *(b+i) - sum ) / *(a+i*N+i);
+        // Now we can do the backward substitution to get the solution
+        // vector x for the upper-triangular system (Ux=y)
+     
+        *(b+N-1) = *(b+N-1) / *(a+N*(N-1)+(N-1));
+        for (i=N-2;i>=0;i--){
+           tmp = 0.0;
+           for (j=i+1;j<N;j++) {
+             tmp = tmp + *(a+i*N+j) * *(b+j);
+           }
+           *(b+i) = ( *(b+i) - tmp ) / *(a+i*N+i); 
         }
 
-        // Now solve upper-triangular (Ux=y) using results from prior step
-
-        *(x+(N-1)) = *(x+(N-1)) / *(a+(N-1)*N+(N-1));
-        for (i=N-2;i>=0;i--) {
-            sum = 0.0;
-            for (j=i+1;j<N;j++) {
-                sum+= *(a+i*N*j) * *(x+j);
-            }
-            *(x+i) = ( *(y+i) - sum ) / *(a+i*N+i);
-        }
+        for (i=0;i<N;i++) *(x+i) = *(b+i);
 
         // At this point the solution to the system should be in vector x 
 
