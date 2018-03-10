@@ -1,3 +1,17 @@
+/***************************************************************
+ *
+ * ITERATIVE LINEAR SOLVER
+ *
+ * Andrew J. Pounds, Ph.D.
+ * Spring 2018
+ *
+ * Unless otherwise noted, all code and methods belong to the author.
+ * Equations for the Jaboby iterative solver we adapted from Golub
+ * and van Loan, "Matrix Computations", Johns Hopkins University press,
+ * 1996. 
+ *
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,17 +34,14 @@ int zerosAlongDiagonal ( int N, double *a ) {
 
     double ZERO;
     int i;
-    int testFail;
+    int foundZero;
 
-    testFail = 0;
+    foundZero = 0;
     for (i=0;i<N;i++) { 
-        if (!testFail) { 
-            testFail = fabs(*(a+i*N+i)) == ZERO;
-            printf("line %d passed with %d\n", i, testFail);
-            if ( testFail ) printf("failed on row %d\n", i);
+        if (!foundZero)  
+            foundZero = fabs(*(a+i*N+i)) == ZERO;
     }
-    }
-    return testFail;
+    return foundZero;
 }
 
 // Code to check for convergence
@@ -77,6 +88,10 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
     // to our discrete linear solver which will do a form of Gaussian Elimination with partial
     // pivoting to solve the system. 
 
+    // NOTE: we are not modifying matrix A or vector B in any manner in this iterative procedure
+    // so that if we fail to achieve convergence we can drop back to the direct solver with the original
+    // A matrix and B vector.
+
     if ( ! zerosAlongDiagonal( N, a ) ) {
 
         // Do Jacobi Iterative Method to solve Ax=b. 
@@ -100,7 +115,7 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
           
           for (i=0;i<N;i++) *(x0+i) = *(x+i);
 
-          // start the reduction process
+          // start the reduction process  (modified from Golub and van Loan, Chapter 10)
           
           for (i=0;i<N;i++) { 
              sum1 = 0.0;
@@ -112,11 +127,6 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
 
           iteration++;
 
-//          for (i=0;i<N;i++)  
-//              printf( " %d  %f  %f \n", iteration, *(x+i), *(x0+i));
-//          
-          printf("iteration %d \n", iteration); 
-          
         }
         free(x0);
 
@@ -130,6 +140,8 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
 
     else {
 
+       printf(" *** FOUND A ZERO ELEMENT ALONG MATRIX DIAGONAL ***\n");
+       printf(" ***  SWITCHING TO DIRECT SOLVER FOR PIVOTING   ***\n");
        dls_( threads, len, a, b, x );
 
     }
