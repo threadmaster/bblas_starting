@@ -12,38 +12,42 @@ extern "C" {
 
 /*  S E R I A L   C O D E  */
 
+// Need the following prototype in case of a zero along the diagonal
+void  dls_( int *threads, int *len, double *a, double *b, double *x );
+
+// Code to check for zeros along the diagonal
 int zerosAlongDiagonal ( int N, double *a ) {
 
     double ZERO;
     int i;
-
+    int testPassed;
+    
     testPassed = 1;
-    row = 0;
-    sum = 0.0;
     for (i=0;i<N;i++) { 
-        if (testPassed) {
-            testPassed = abs(*(a+i*N+i)) != ZERO
-        }
+        if (testPassed) 
+            testPassed = abs(*(a+i*N+i)) != ZERO;
     }
 
     return testPassed;
 }
 
-int converged( int N, *a, *b) {
+// Code to check for convergence
+int converged( int N, double *a, double *b) {
     
     // Compute the distance between the vectors and see if the 2-Norm below tolerance
 
-    double TOL = 1.0e-12;
-    double sum = 0.0;
-    double maxval = 
+    double const TOL = 1.0e-12;
+    double sum;
+    int i;
 
+    sum = 0.0; 
     for (i=0; i<N; i++) {
-       sum += (*(a+i)-*(b+i))*((*(a+i)-*(b+i))
+       sum += (*(a+i)-*(b+i))*(*(a+i)-*(b+i));
     }
     sum = sqrt(sum);
 
-    converged = sum < TOL    
-
+    return (sum < TOL);    
+    
 }
     
 void ils_( int *threads, int *len,  double *a, double *b, double *x ){
@@ -57,7 +61,7 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
     double sum1, sum2;
     double ZERO = 0.0;
     int ITERATION_MAX = 1000;
-    int *x0;
+    double *x0;
 
     N = *len;
 
@@ -89,13 +93,13 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
           
           for (i=0;i<N;i++) *(x0+i) = *(x+i);
 
-          // start reduction process
+          // start the reduction process
           
           for (i=0;i<N;i++) { 
              sum1 = 0.0;
-             for (j=0;j<i-1;j++) sum1+= *(a+i*N+j)*x0(j); 
+             for (j=0;j<i-1;j++) sum1+= *(a+i*N+j)* *(x0+j); 
              sum2 = 0.0; 
-             for (j=i+1;j<n;j++) sum2+= *(a+i*N+j)*x0(j); 
+             for (j=i+1;j<N;j++) sum2+= *(a+i*N+j)* *(x0+j); 
              *(x+i) = ( *(b+i) - sum1 - sum2 ) / *(a+i*N+i);
           }
 
@@ -104,7 +108,7 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
           for (i=0;i<N;i++)  
               printf( " %d  %f  %f \n", iteration, *(x+i), *(x0+i));
           
-          printfr("\n"); 
+          printf("\n"); 
           
         }
         free(x0);
