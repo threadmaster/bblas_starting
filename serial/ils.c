@@ -1,7 +1,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    void ils_( int *threads, int *len,  double *a, double *b, double*c );
+    void ils_( int *threads, int *len,  double *a, double *b, double *x );
 #ifdef __cplusplus
 }
 #endif
@@ -20,33 +20,40 @@ int zerosAlongDiagonal ( int N, double *a ) {
 
     double ZERO;
     int i;
-    int testPassed;
-    
-    testPassed = 1;
-    for (i=0;i<N;i++) { 
-        if (testPassed) 
-            testPassed = abs(*(a+i*N+i)) != ZERO;
-    }
+    int testFail;
 
-    return testPassed;
+    testFail = 0;
+    for (i=0;i<N;i++) { 
+        if (!testFail) { 
+            testFail = fabs(*(a+i*N+i)) == ZERO;
+            printf("line %d passed with %d\n", i, testFail);
+            if ( testFail ) printf("failed on row %d\n", i);
+    }
+    }
+    return testFail;
 }
 
 // Code to check for convergence
 int converged( int N, double *a, double *b) {
     
-    // Compute the distance between the vectors and see if the 2-Norm below tolerance
+    // Compute the distance between the vectors and see if the 2-Norm is
+    // within tolerance
 
-    double const TOL = 1.0e-12;
-    double sum;
+    double const TOL = 5.0e-15;
+    double sum, maxb;
     int i;
 
+    // find max in array b for tolerance scaling while computing sum
+   
+    maxb=*(b+0); 
     sum = 0.0; 
     for (i=0; i<N; i++) {
+       maxb = fmax(maxb,fabs(*(b+i)));
        sum += (*(a+i)-*(b+i))*(*(a+i)-*(b+i));
     }
     sum = sqrt(sum);
-
-    return (sum < TOL);    
+    printf("sum = %e, scaled sum = %e\n", sum, sum/maxb);
+    return (sum/maxb < TOL);    
     
 }
     
@@ -60,7 +67,7 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
     int i, j, k, N, iteration;
     double sum1, sum2;
     double ZERO = 0.0;
-    int ITERATION_MAX = 1000;
+    int ITERATION_MAX = 100000;
     double *x0;
 
     N = *len;
@@ -84,10 +91,10 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
    
         // Fill the x vector with b vector just so the initial convergence test will fail
 
-        for (i=0;i<N;i++) *(x+i) = *(b+i);
+        for (i=0;i<N;i++) *(x0+i) = *(b+i);
 
        iteration = 0;
-       while ( !converged(N,x,x0) || iteration < ITERATION_MAX ) {
+       while ( !converged(N,x,x0) && iteration < ITERATION_MAX ) {
 
           // copy last result to initial values
           
@@ -105,13 +112,20 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
 
           iteration++;
 
-          for (i=0;i<N;i++)  
-              printf( " %d  %f  %f \n", iteration, *(x+i), *(x0+i));
-          
-          printf("\n"); 
+//          for (i=0;i<N;i++)  
+//              printf( " %d  %f  %f \n", iteration, *(x+i), *(x0+i));
+//          
+          printf("iteration %d \n", iteration); 
           
         }
         free(x0);
+
+     if ( iteration == ITERATION_MAX) {
+       printf(" *** ITERATIVE SOLVER FAILED TO REACH CONVERGENCE AFTER  ***\n");
+       printf(" *** %d ITERATIONS, SWITCHING TO DIRECT SOLVER ***\n", iteration);
+       dls_( threads, len, a, b, x );
+     }
+
     }
 
     else {
