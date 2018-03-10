@@ -33,6 +33,9 @@ print *, "Performing DLS Accuracy Test"
 call system("curl -s -o linsolve_a.dat --url http://theochem.mercer.edu/csc435/data/linsolve_a.dat")
 call system("curl -s -o linsolve_b.dat --url http://theochem.mercer.edu/csc435/data/linsolve_b.dat")
 call system("curl -s -o linsolve_x.dat --url http://theochem.mercer.edu/csc435/data/linsolve_x.dat")
+!call system("curl -s -o linsolve_a.dat --url http://theochem.mercer.edu/csc435/data/linsolve_a_dd.dat")
+!call system("curl -s -o linsolve_b.dat --url http://theochem.mercer.edu/csc435/data/linsolve_b_dd.dat")
+!call system("curl -s -o linsolve_x.dat --url http://theochem.mercer.edu/csc435/data/linsolve_x_dd.dat")
 
 print *, "Files loaded from theochem.mercer.edu"
 
@@ -150,7 +153,7 @@ wall_start = walltime()
 cpu_start = cputime()
 
 !call mmm(nthreads, NDIM, matrixa, matrixb, matrixc)
-call dls(nthreads, NDIM, matrixa, vecb, vecx)
+call ils(nthreads, NDIM, matrixa, vecb, vecx)
 
 cpu_end = cputime()
 wall_end = walltime()

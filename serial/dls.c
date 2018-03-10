@@ -1,3 +1,18 @@
+
+/**********************************************************************
+ *
+ * DIRECT LINEAR SOLVER
+ *
+ * Andrew J. Pounds, Ph.D.
+ * Spring 2018
+ *
+ * Unless otherwise noted, all code and methods belong to the author.
+ * Equations for Gaussian Elimnation with Partial Pivoting and the the
+ * LU Decomposition we adapted from Golub and van Loan,
+ * "Matrix Computations", Johns Hopkins University press, 1996.
+ *
+ **********************************************************************/
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -56,6 +71,7 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
     if ( ! strictlyDiagonallyDominant( N, a ) ) {
 
         // Do Gaussian Elimination with Partial Pivoting 
+        //   (modified from Golub and van Load, Chapter 3) 
 
         // Create an array to hold pivot swaps 
 
@@ -167,7 +183,8 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
         }
 
         // We know at this point that we have a strictly diagonally dominant matrix that is
-        // not singular -- so it sould be possible to do the LU factorization
+        // not singular -- so it sould be possible to do the LU factorization.
+        //    (modified from Golub and van Loan, Chapter 3)
 
         for (k=0; k<N-1; k++) {
             for (rows=k+1;rows<N;rows++) {
