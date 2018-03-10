@@ -1,3 +1,18 @@
+
+/**********************************************************************
+ *
+ * DIRECT LINEAR SOLVER
+ *
+ * Andrew J. Pounds, Ph.D.
+ * Spring 2018
+ *
+ * Unless otherwise noted, all code and methods belong to the author.
+ * Equations for Gaussian Elimnation with Partial Pivoting and the the
+ * LU Decomposition we adapted from Golub and van Loan,
+ * "Matrix Computations", Johns Hopkins University press, 1996.
+ *
+ **********************************************************************/
+
 #ifdef __cplusplus
 extern "C" {
 #endif

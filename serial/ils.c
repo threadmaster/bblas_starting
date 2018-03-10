@@ -1,4 +1,4 @@
-/***************************************************************
+/**********************************************************************
  *
  * ITERATIVE LINEAR SOLVER
  *
@@ -6,11 +6,11 @@
  * Spring 2018
  *
  * Unless otherwise noted, all code and methods belong to the author.
- * Equations for the Jaboby iterative solver we adapted from Golub
+ * Equations for the Jacoby iterative solver we adapted from Golub
  * and van Loan, "Matrix Computations", Johns Hopkins University press,
  * 1996. 
  *
- */
+ **********************************************************************/
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,7 +63,6 @@ int converged( int N, double *a, double *b) {
        sum += (*(a+i)-*(b+i))*(*(a+i)-*(b+i));
     }
     sum = sqrt(sum);
-    printf("sum = %e, scaled sum = %e\n", sum, sum/maxb);
     return (sum/maxb < TOL);    
     
 }
