@@ -10,8 +10,11 @@ vvm.o : vvm.c
 mmm.o : mmm.c
 	$(CC) $(CFLAGS)  -c mmm.c
 
-lib: vvm.o mmm.o 
-	ar -rc libserial_bblas.a vvm.o mmm.o 
+dls.o : dls.c
+	$(CC) $(CFLAGS)  -c dls.c
+
+lib: vvm.o mmm.o dls.o 
+	ar -rc libserial_bblas.a vvm.o mmm.o dls.o 
 	ranlib libserial_bblas.a
 
 # Default Targets for Cleaning up the Environment
