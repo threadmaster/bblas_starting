@@ -29,6 +29,7 @@ print *, "Performing DLS Accuracy Test"
 !the matrix, vector b, and solution vector x stored on the class website.
 
 !Download the files from theochem using curl (don't store these on anvil!)
+!NOTE: for strictly diagonally dominant systems append _dd, e.g. -- linsolve_a_dd.dat
 call system("curl -s -o linsolve_a.dat --url http://theochem.mercer.edu/csc435/data/linsolve_a.dat")
 call system("curl -s -o linsolve_b.dat --url http://theochem.mercer.edu/csc435/data/linsolve_b.dat")
 call system("curl -s -o linsolve_x.dat --url http://theochem.mercer.edu/csc435/data/linsolve_x.dat")
