@@ -16,26 +16,24 @@ character (len=8) :: carg1, carg2, carg3, carg4
 
 real (kind=8), dimension(:), allocatable :: veca, vecb, vecx
 real (kind=8), dimension(:,:), allocatable :: matrixa, matrixb, matrixc
+logical :: DIAG_DOMINANT
+real (kind=8) :: residual
 
 #ifdef ACCURACY_TEST
 
+#ifdef LS_TEST
+
 NDIM = 100 
 nthreads = 2
-
-#ifdef DLS_TEST
-
 print *, "Performing DLS Accuracy Test"
 !This portion of code is ONLY used for verifying the accuracy of the code using
 !the matrix, vector b, and solution vector x stored on the class website.
 
 !Download the files from theochem using curl (don't store these on anvil!)
-!NOTE: for strictly diagonally dominant systems append _dd, e.g. -- linsolve_a_dd.dat
+!NOTE: for strictly diagonally dominant systems append _dd to last file name, e.g. -- linsolve_a_dd.dat
 call system("curl -s -o linsolve_a.dat --url http://theochem.mercer.edu/csc435/data/linsolve_a.dat")
 call system("curl -s -o linsolve_b.dat --url http://theochem.mercer.edu/csc435/data/linsolve_b.dat")
 call system("curl -s -o linsolve_x.dat --url http://theochem.mercer.edu/csc435/data/linsolve_x.dat")
-!call system("curl -s -o linsolve_a.dat --url http://theochem.mercer.edu/csc435/data/linsolve_a_dd.dat")
-!call system("curl -s -o linsolve_b.dat --url http://theochem.mercer.edu/csc435/data/linsolve_b_dd.dat")
-!call system("curl -s -o linsolve_x.dat --url http://theochem.mercer.edu/csc435/data/linsolve_x_dd.dat")
 
 print *, "Files loaded from theochem.mercer.edu"
 
@@ -102,6 +100,7 @@ close(5)
 call system("rm matrixa.dat matrixb.dat")
 #endif
 
+
 #else
 
 ! Start the normal processing here.  Read the starting, stop, and step values
@@ -128,6 +127,7 @@ NDIM = iter
 
 allocate ( veca(NDIM), stat=ierr)
 allocate ( vecb(NDIM), stat=ierr)
+allocate ( vecx(NDIM), stat=ierr)
 allocate ( matrixa(NDIM,NDIM), stat=ierr)
 allocate ( matrixb(NDIM,NDIM), stat=ierr)
 allocate ( matrixc(NDIM,NDIM), stat=ierr)
@@ -147,13 +147,23 @@ matrixb = 0.0
 call vvm(NDIM, veca, vecb, matrixa)
 call vvm(NDIM, veca, vecb, matrixb)
 
+! If doing ILS or DLS testing, build matrix C explicitly 
+! as well as solution vector X and product vector B. You
+! can also specify if you want the system to be diagonally 
+! dominant.
+
+DIAG_DOMINANT = .true.
+
+call buildLinearSystem( NDIM, matrixc, vecb, vecx,  DIAG_DOMINANT )
+
 #endif
 
 wall_start = walltime()
 cpu_start = cputime()
 
 !call mmm(nthreads, NDIM, matrixa, matrixb, matrixc)
-call ils(nthreads, NDIM, matrixa, vecb, vecx)
+!call dls(nthreads, NDIM, matrixc, vecb, vecx)
+call ils(nthreads, NDIM, matrixc, vecb, vecx)
 
 cpu_end = cputime()
 wall_end = walltime()
@@ -164,30 +174,95 @@ trace = 0.0;
 !     trace = trace + matrixc(i,i)
 !enddo
 
+residual = 0.0
 do i=1, NDIM
-   print *, vecx(i), veca(i), vecx(i)-veca(i)
+   residual = residual + abs(vecx(i)-dble(i))
 enddo
+
 
 ! Calculate megaflops based on CPU time and Walltime
 
-mflops  = 2*dble(NDIM)**3/ (cpu_end-cpu_start) / 1.0e6
-mflops2 = 2*dble(NDIM)**3/ (wall_end-wall_start)/ 1.0e6
+! NOTE -- these need to be replaced with PAPI calls to correctly work
+! for iterative linear solve
+!
+! Matrix multiplication is 2*N**3 flops
+! Gaussian Elimination with Partial Pivoting and LU decomposition are
+! approximately (2/3)*N**3 flops
+
+! For matrix multiplication
+!mflops  = 2*dble(NDIM)**3/ (cpu_end-cpu_start) / 1.0e6
+!mflops2 = 2*dble(NDIM)**3/ (wall_end-wall_start)/ 1.0e6
+
+!print *, NDIM, trace, cpu_end-cpu_start, wall_end-wall_start,  mflops, mflops2
+
+! For discrete linear solver
+mflops  = (2.0/3.0)*dble(NDIM)**3/ (cpu_end-cpu_start) / 1.0e6
+mflops2 = (2.0/3.0)*dble(NDIM)**3/ (wall_end-wall_start)/ 1.0e6
  
-print *, NDIM, trace, cpu_end-cpu_start, wall_end-wall_start,  mflops, mflops2
+print *, NDIM, residual, cpu_end-cpu_start, wall_end-wall_start,  mflops, mflops2
 
 
 ! Free the memory that was allocated based on which version of the program was
 ! run.
 
-deallocate(matrixa)
-deallocate(veca)
-deallocate(vecb)
-#ifndef ACCURACY_TEST
-deallocate(matrixb)
-deallocate(matrixc)
+if (allocated(matrixa)) deallocate(matrixa)
+if (allocated(matrixb)) deallocate(matrixb)
+if (allocated(matrixc)) deallocate(matrixc)
+if (allocated(veca)) deallocate(veca)
+if (allocated(vecb)) deallocate(vecb)
+if (allocated(vecx)) deallocate(vecx)
+
 
 enddo
-#endif
 
 end program driver 
+
+
+! Subroutine to build random linear systems for Solvers to Use
+subroutine buildLinearSystem( N, A, B, X,  DIAG_DOMINANT )
+
+integer :: N;
+real (kind=8), dimension(N,N) :: A 
+real (kind=8), dimension(N) :: B, X
+logical :: DIAG_DOMINANT
+real (kind=8) :: rowsum
+
+call init_random_seed()
+call random_number(A)
+
+do i =1, N
+  X(i) = dble(i)
+enddo
+
+if (DIAG_DOMINANT ) then
+    do i=1,N
+   rowsum = 0.0
+   do j=1, N 
+      rowsum=rowsum+abs(A(j,i))
+   enddo
+   A(i,i) = rowsum-abs(A(i,i))+10.0
+ enddo
+endif
+
+B = matmul(X,A)
+
+end subroutine 
+
+
+
+! This is needed for the random number generator
+SUBROUTINE init_random_seed() 
+  INTEGER :: i, n, clock 
+  INTEGER, DIMENSION(:), ALLOCATABLE :: seed 
+ 
+  CALL RANDOM_SEED(size = n) 
+  ALLOCATE(seed(n)) 
+ 
+  CALL SYSTEM_CLOCK(COUNT=clock) 
+
+  seed = clock + 37 * (/ (i - 1, i = 1, n) /)
+  CALL RANDOM_SEED(PUT = seed)
+
+  DEALLOCATE(seed)
+END SUBROUTINE
  

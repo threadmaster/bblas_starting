@@ -16,7 +16,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    void mmm_( int *threads, int *len,  double *a, double *b, double*c );
+    void dls_( int *threads, int *len,  double *a, double *b, double*c );
 #ifdef __cplusplus
 }
 #endif
@@ -119,6 +119,7 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
 
                 /* Handle the case of a zero pivot element, singular matrix */
 
+                printf( "Element a[%d][%d} = %f\n", k, k, *(a+k*N+k)); 
                 printf( " *** MATRIX A IS SINGULAR *** \n");
                 printf( "    -- EXECUTION HALTED --\n");
                 exit(1);
@@ -171,6 +172,7 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
         // that none of the pivot elements are equal to zero
 
         singular = 1; 
+        i=0;
         while ( i<N  && singular ) {
             singular = *(a+i*N+i) == ZERO;   
             i++;
