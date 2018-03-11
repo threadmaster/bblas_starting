@@ -45,7 +45,7 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
     int i, j, k, N, iteration;
     double sum1, sum2;
     double ZERO = 0.0;
-    int ITERATION_MAX = 10000;
+    int ITERATION_MAX = 100;
     double *x0;
 
     N = *len;
@@ -75,6 +75,9 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
 
         for (i=0;i<N;i++) *(x0+i) = *(b+i);
 
+       // If more than N/3 iterations are done, the direct solver is more efficient
+       ITERATION_MAX = fmax(ITERATION_MAX, N/3);
+ 
        iteration = 0;
        while ( !converged(N,x,x0) && iteration < ITERATION_MAX ) {
 

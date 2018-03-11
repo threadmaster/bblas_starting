@@ -186,7 +186,7 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
 
         // We know at this point that we have a strictly diagonally dominant matrix that is
         // not singular -- so it sould be possible to do the LU factorization.
-        //    (modified from Golub and van Loan, Chapter 3)
+        //   (modified from Golub and van Loan, Chapter 3)
 
         for (k=0; k<N-1; k++) {
             for (rows=k+1;rows<N;rows++) {

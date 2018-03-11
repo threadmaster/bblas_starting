@@ -176,7 +176,7 @@ trace = 0.0;
 
 residual = 0.0
 do i=1, NDIM
-   residual = residual + abs(vecx(i)-dble(i))
+   residual = max(residual, abs(vecx(i)-dble(i)))
 enddo
 
 
@@ -240,7 +240,7 @@ if (DIAG_DOMINANT ) then
    do j=1, N 
       rowsum=rowsum+abs(A(j,i))
    enddo
-   A(i,i) = rowsum-abs(A(i,i))+10.0
+   A(i,i) = rowsum-abs(A(i,i))+100.0
  enddo
 endif
 
