@@ -29,44 +29,12 @@ extern "C" {
 // Need the following prototype in case of a zero along the diagonal
 void  dls_( int *threads, int *len, double *a, double *b, double *x );
 
-// Code to check for zeros along the diagonal
-int zerosAlongDiagonal ( int N, double *a ) {
+// Prototype for code to check for zeros along the diagonal
+int zerosAlongDiagonal ( int N, double *a );
 
-    double ZERO;
-    int i;
-    int foundZero;
+// Prototype for code to check for convergence
+int converged( int N, double *a, double *b);
 
-    foundZero = 0;
-    for (i=0;i<N;i++) { 
-        if (!foundZero)  
-            foundZero = fabs(*(a+i*N+i)) == ZERO;
-    }
-    return foundZero;
-}
-
-// Code to check for convergence
-int converged( int N, double *a, double *b) {
-    
-    // Compute the distance between the vectors and see if the 2-Norm is
-    // within tolerance
-
-    double const TOL = 5.0e-15;
-    double sum, maxb;
-    int i;
-
-    // find max in array b for tolerance scaling while computing sum
-   
-    maxb=*(b+0); 
-    sum = 0.0; 
-    for (i=0; i<N; i++) {
-       maxb = fmax(maxb,fabs(*(b+i)));
-       sum += (*(a+i)-*(b+i))*(*(a+i)-*(b+i));
-    }
-    sum = sqrt(sum);
-    return (sum/maxb < TOL);    
-    
-}
-    
 void ils_( int *threads, int *len,  double *a, double *b, double *x ){
 
     /* in serial code, *threads not used. It is retained here so the code can be called
@@ -77,7 +45,7 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
     int i, j, k, N, iteration;
     double sum1, sum2;
     double ZERO = 0.0;
-    int ITERATION_MAX = 100000;
+    int ITERATION_MAX = 10000;
     double *x0;
 
     N = *len;
@@ -127,6 +95,8 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
           iteration++;
 
         }
+
+        // the initial value array is no longer needed
         free(x0);
 
      if ( iteration == ITERATION_MAX) {
@@ -149,3 +119,44 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
 }
 
 
+// Code to check for zeros along the diagonal
+int zerosAlongDiagonal ( int N, double *a ) {
+
+    double ZERO;
+    int i;
+    int foundZero;
+
+    foundZero = 0;
+    for (i=0;i<N;i++) { 
+        if (!foundZero)  
+            foundZero = fabs(*(a+i*N+i)) == ZERO;
+    }
+    return foundZero;
+}
+
+// Code to check for convergence
+int converged( int N, double *a, double *b) {
+    
+    // Compute the distance between the vectors and see if the 2-Norm is
+    // within tolerance
+
+    double const TOL = 5.0e-15;
+    double sum, maxb;
+    int i;
+
+    // find max in array b for tolerance scaling while computing sum
+   
+    maxb=*(b+0); 
+    sum = 0.0; 
+    for (i=0; i<N; i++) {
+       maxb = fmax(maxb,fabs(*(b+i)));
+       sum += (*(a+i)-*(b+i))*(*(a+i)-*(b+i));
+    }
+    sum = sqrt(sum);
+    
+    // by dividing by the largest value in the b matrix we effectively
+    // scale the 2-Norm so it can achieve machine precision
+    return (sum/maxb < TOL);    
+    
+}
+    
