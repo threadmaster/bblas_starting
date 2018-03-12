@@ -16,7 +16,7 @@ character (len=8) :: carg1, carg2, carg3, carg4
 
 real (kind=8), dimension(:), allocatable :: veca, vecb, vecx
 real (kind=8), dimension(:,:), allocatable :: matrixa, matrixb, matrixc
-logical :: DIAG_DOMINANT
+logical :: DIAG_DOMINANT, SPARSE
 real (kind=8) :: residual
 
 #ifdef ACCURACY_TEST
@@ -153,8 +153,8 @@ call vvm(NDIM, veca, vecb, matrixb)
 ! dominant.
 
 DIAG_DOMINANT = .true.
-
-call buildLinearSystem( NDIM, matrixc, vecb, vecx,  DIAG_DOMINANT )
+SPARSE = .true.
+call buildLinearSystem( NDIM, matrixc, vecb, vecx,  DIAG_DOMINANT, SPARSE )
 
 #endif
 
@@ -186,8 +186,8 @@ enddo
 ! for iterative linear solve
 !
 ! Matrix multiplication is 2*N**3 flops
-! Gaussian Elimination with Partial Pivoting and LU decomposition are
-! approximately (2/3)*N**3 flops
+! Gaussian Elimination with Partial Pivoting is approximately 2*N**2+(2/3)*N**3
+! flops and and LU decomposition is approximately (2/3)*N**3 flops
 
 ! For matrix multiplication
 !mflops  = 2*dble(NDIM)**3/ (cpu_end-cpu_start) / 1.0e6
@@ -219,12 +219,12 @@ end program driver
 
 
 ! Subroutine to build random linear systems for Solvers to Use
-subroutine buildLinearSystem( N, A, B, X,  DIAG_DOMINANT )
+subroutine buildLinearSystem( N, A, B, X,  DIAG_DOMINANT, SPARSE )
 
 integer :: N;
 real (kind=8), dimension(N,N) :: A 
 real (kind=8), dimension(N) :: B, X
-logical :: DIAG_DOMINANT
+logical :: DIAG_DOMINANT, SPARSE
 real (kind=8) :: rowsum
 
 call init_random_seed()
@@ -241,6 +241,14 @@ if (DIAG_DOMINANT ) then
       rowsum=rowsum+abs(A(j,i))
    enddo
    A(i,i) = rowsum-abs(A(i,i))+100.0
+ enddo
+endif
+
+if (SPARSE) then
+do i=1,N
+   do j=1, N 
+      if (j .lt. (i-5) .or. j .gt. (i+5) ) a(j,i) = 0.0;
+   enddo
  enddo
 endif
 
