@@ -63,58 +63,58 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
 
         // Do Jacobi Iterative Method to solve Ax=b. 
 
-        // Create an temporary to hold initial values and intermediate steps 
+        // Create a temporary vector to hold initial values and intermediate steps 
 
         x0 = malloc( N * sizeof(double) );
 
         // Fill the x0 vector with initial values of zero
 
         for (i=0;i<N;i++) *(x+i) = 0.0;
-   
+
         // Fill the x vector with b vector just so the initial convergence test will fail
 
         for (i=0;i<N;i++) *(x0+i) = *(b+i);
 
-       // If more than N/3 iterations are done, the direct solver is more efficient
-       ITERATION_MAX = fmax(ITERATION_MAX, N/3);
- 
-       iteration = 0;
-       while ( !converged(N,x,x0) && iteration < ITERATION_MAX ) {
+        // If more than N/3 iterations are done, the direct solver is more efficient
+        ITERATION_MAX = fmax(ITERATION_MAX, N/3);
 
-          // copy last result to initial values
-          
-          for (i=0;i<N;i++) *(x0+i) = *(x+i);
+        iteration = 0;
+        while ( !converged(N,x,x0) && iteration < ITERATION_MAX ) {
 
-          // start the reduction process  (modified from Golub and van Loan, Chapter 10)
-          
-          for (i=0;i<N;i++) { 
-             sum1 = 0.0;
-             for (j=0;j<i-1;j++) sum1+= *(a+i*N+j)* *(x0+j); 
-             sum2 = 0.0; 
-             for (j=i+1;j<N;j++) sum2+= *(a+i*N+j)* *(x0+j); 
-             *(x+i) = ( *(b+i) - sum1 - sum2 ) / *(a+i*N+i);
-          }
+            // copy last result to initial values
 
-          iteration++;
+            for (i=0;i<N;i++) *(x0+i) = *(x+i);
+
+            // start the reduction process  (ref: Golub and van Loan, Chapter 10)
+
+            for (i=0;i<N;i++) { 
+                sum1 = 0.0;
+                for (j=0;j<i-1;j++) sum1+= *(a+i*N+j)* *(x0+j); 
+                sum2 = 0.0; 
+                for (j=i+1;j<N;j++) sum2+= *(a+i*N+j)* *(x0+j); 
+                *(x+i) = ( *(b+i) - sum1 - sum2 ) / *(a+i*N+i);
+            }
+
+            iteration++;
 
         }
 
         // the initial value array is no longer needed
         free(x0);
 
-     if ( iteration == ITERATION_MAX) {
-       printf(" *** ITERATIVE SOLVER FAILED TO REACH CONVERGENCE AFTER  ***\n");
-       printf(" *** %d ITERATIONS, SWITCHING TO DIRECT SOLVER ***\n", iteration);
-       dls_( threads, len, a, b, x );
-     }
+        if ( iteration == ITERATION_MAX) {
+            printf(" *** ITERATIVE SOLVER FAILED TO REACH CONVERGENCE AFTER  ***\n");
+            printf(" *** %d ITERATIONS, SWITCHING TO DIRECT SOLVER ***\n", iteration);
+            dls_( threads, len, a, b, x );
+        }
 
     }
 
     else {
 
-       printf(" *** FOUND A ZERO ELEMENT ALONG MATRIX DIAGONAL ***\n");
-       printf(" ***  SWITCHING TO DIRECT SOLVER FOR PIVOTING   ***\n");
-       dls_( threads, len, a, b, x );
+        printf(" *** FOUND A ZERO ELEMENT ALONG MATRIX DIAGONAL ***\n");
+        printf(" ***  SWITCHING TO DIRECT SOLVER FOR PIVOTING   ***\n");
+        dls_( threads, len, a, b, x );
 
     }
 
@@ -137,9 +137,9 @@ int zerosAlongDiagonal ( int N, double *a ) {
     return foundZero;
 }
 
-// Code to check for convergence
+// Code to check for convergence (A. Pounds, 2018)
 int converged( int N, double *a, double *b) {
-    
+
     // Compute the distance between the vectors and see if the 2-Norm is
     // within tolerance
 
@@ -148,18 +148,18 @@ int converged( int N, double *a, double *b) {
     int i;
 
     // find max in array b for tolerance scaling while computing sum
-   
+
     maxb=*(b+0); 
     sum = 0.0; 
     for (i=0; i<N; i++) {
-       maxb = fmax(maxb,fabs(*(b+i)));
-       sum += (*(a+i)-*(b+i))*(*(a+i)-*(b+i));
+        maxb = fmax(maxb,fabs(*(b+i)));
+        sum += (*(a+i)-*(b+i))*(*(a+i)-*(b+i));
     }
     sum = sqrt(sum);
-    
+
     // by dividing by the largest value in the b matrix we effectively
     // scale the 2-Norm so it can achieve machine precision
     return (sum/maxb < TOL);    
-    
+
 }
-    
+

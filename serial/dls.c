@@ -27,25 +27,9 @@ extern "C" {
 
 /*  S E R I A L   C O D E  */
 
-int strictlyDiagonallyDominant( int N, double *a ) {
 
-    double sum;
-    int i, testPassed, row;
-
-    testPassed = 1;
-    row = 0;
-    sum = 0.0;
-    for (row=0;row<N;row++) { 
-        if (testPassed) {
-            sum = 0.0;
-            for (i=0;i<N;i++) sum+=*(a+row*N+i);
-            sum-=fabs(*(a+row*N+row)); 
-            testPassed = fabs(*(a+row*N+row)) > sum;
-        }
-    }
-
-    return testPassed;
-}
+/* Function prototype for code used in dls */
+int strictlyDiagonallyDominant( int N, double *a ); 
 
 
 void dls_( int *threads, int *len,  double *a, double *b, double *x ){
@@ -232,4 +216,24 @@ void dls_( int *threads, int *len,  double *a, double *b, double *x ){
 
 }
 
+
+int strictlyDiagonallyDominant( int N, double *a ) {
+
+    double sum;
+    int i, testPassed, row;
+
+    testPassed = 1;
+    row = 0;
+    sum = 0.0;
+    for (row=0;row<N;row++) { 
+        if (testPassed) {
+            sum = 0.0;
+            for (i=0;i<N;i++) sum+=*(a+row*N+i);
+            sum-=fabs(*(a+row*N+row)); 
+            testPassed = fabs(*(a+row*N+row)) > sum;
+        }
+    }
+
+    return testPassed;
+}
 

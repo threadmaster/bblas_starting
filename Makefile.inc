@@ -2,7 +2,6 @@
 
 F90 = gfortran 
 CC  = gcc
-#FFLAGS = -cpp -O2 -DACCURACY_TEST -DDLS_TEST 
 FFLAGS = -cpp -O2  
 CFLAGS = -g -fopenmp
 MYLIBS = -L./openmp -lopenmp_bblas -L./pthreads -lpthreads_bblas\

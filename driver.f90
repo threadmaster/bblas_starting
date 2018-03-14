@@ -16,8 +16,11 @@ character (len=8) :: carg1, carg2, carg3, carg4
 
 real (kind=8), dimension(:), allocatable :: veca, vecb, vecx
 real (kind=8), dimension(:,:), allocatable :: matrixa, matrixb, matrixc
-logical :: DIAG_DOMINANT, SPARSE
+logical :: DIAG_DOMINANT, SPARSE_MATRIX
 real (kind=8) :: residual
+
+DIAG_DOMINANT = .false.
+SPARSE_MATRIX = .false.
 
 #ifdef ACCURACY_TEST
 
@@ -101,6 +104,7 @@ call system("rm matrixa.dat matrixb.dat")
 #endif
 
 
+! Done with accuracy checking initializations
 #else
 
 ! Start the normal processing here.  Read the starting, stop, and step values
@@ -132,6 +136,7 @@ allocate ( matrixa(NDIM,NDIM), stat=ierr)
 allocate ( matrixb(NDIM,NDIM), stat=ierr)
 allocate ( matrixc(NDIM,NDIM), stat=ierr)
 
+#ifndef LS_TEST
 ! Build veca and vecb which, their tensor product creates the two matrices 
 ! to be multiplied.
 
@@ -147,23 +152,37 @@ matrixb = 0.0
 call vvm(NDIM, veca, vecb, matrixa)
 call vvm(NDIM, veca, vecb, matrixb)
 
+#else
+
 ! If doing ILS or DLS testing, build matrix C explicitly 
 ! as well as solution vector X and product vector B. You
 ! can also specify if you want the system to be diagonally 
 ! dominant.
 
+#ifdef DIAGDOM
 DIAG_DOMINANT = .true.
-SPARSE = .true.
-call buildLinearSystem( NDIM, matrixc, vecb, vecx,  DIAG_DOMINANT, SPARSE )
+#endif
+#ifdef SPARSE
+SPARSE_MATRIX = .true.
+#endif
 
+call buildLinearSystem( NDIM, matrixc, vecb, vecx,  DIAG_DOMINANT, SPARSE_MATRIX )
+
+#endif
 #endif
 
 wall_start = walltime()
 cpu_start = cputime()
 
-!call mmm(nthreads, NDIM, matrixa, matrixb, matrixc)
-!call dls(nthreads, NDIM, matrixc, vecb, vecx)
+#ifndef LS_TEST
+call mmm(nthreads, NDIM, matrixa, matrixb, matrixc)
+#else
+#ifndef ITERATIVE 
+call dls(nthreads, NDIM, matrixc, vecb, vecx)
+#else
 call ils(nthreads, NDIM, matrixc, vecb, vecx)
+#endif
+#endif
 
 cpu_end = cputime()
 wall_end = walltime()
@@ -189,18 +208,20 @@ enddo
 ! Gaussian Elimination with Partial Pivoting is approximately 2*N**2+(2/3)*N**3
 ! flops and and LU decomposition is approximately (2/3)*N**3 flops
 
+#ifndef LS_TEST
 ! For matrix multiplication
-!mflops  = 2*dble(NDIM)**3/ (cpu_end-cpu_start) / 1.0e6
-!mflops2 = 2*dble(NDIM)**3/ (wall_end-wall_start)/ 1.0e6
+mflops  = 2*dble(NDIM)**3/ (cpu_end-cpu_start) / 1.0e6
+mflops2 = 2*dble(NDIM)**3/ (wall_end-wall_start)/ 1.0e6
 
-!print *, NDIM, trace, cpu_end-cpu_start, wall_end-wall_start,  mflops, mflops2
+print *, NDIM, trace, cpu_end-cpu_start, wall_end-wall_start,  mflops, mflops2
+#else
 
-! For discrete linear solver
+! For direct linear solver only, add option for iterative linear solver
 mflops  = (2.0/3.0)*dble(NDIM)**3/ (cpu_end-cpu_start) / 1.0e6
 mflops2 = (2.0/3.0)*dble(NDIM)**3/ (wall_end-wall_start)/ 1.0e6
  
 print *, NDIM, residual, cpu_end-cpu_start, wall_end-wall_start,  mflops, mflops2
-
+#endif
 
 ! Free the memory that was allocated based on which version of the program was
 ! run.
@@ -218,13 +239,14 @@ enddo
 end program driver 
 
 
-! Subroutine to build random linear systems for Solvers to Use
-subroutine buildLinearSystem( N, A, B, X,  DIAG_DOMINANT, SPARSE )
+! Subroutine to build random linear systems for Solvers to Use,
+!  (A. Pounds, 2018)
+subroutine buildLinearSystem( N, A, B, X,  DIAG_DOMINANT, SPARSE_MATRIX )
 
 integer :: N;
 real (kind=8), dimension(N,N) :: A 
 real (kind=8), dimension(N) :: B, X
-logical :: DIAG_DOMINANT, SPARSE
+logical :: DIAG_DOMINANT, SPARSE_MATRIX
 real (kind=8) :: rowsum
 
 call init_random_seed()
@@ -235,6 +257,7 @@ do i =1, N
 enddo
 
 if (DIAG_DOMINANT ) then
+! Force the matrix to be diagonally dominant
     do i=1,N
    rowsum = 0.0
    do j=1, N 
@@ -244,7 +267,8 @@ if (DIAG_DOMINANT ) then
  enddo
 endif
 
-if (SPARSE) then
+if (SPARSE_MATRIX) then
+!Build sparse matrix with 5 superdiagonals and 5 subdiagonals
 do i=1,N
    do j=1, N 
       if (j .lt. (i-5) .or. j .gt. (i+5) ) a(j,i) = 0.0;
