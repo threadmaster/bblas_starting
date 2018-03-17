@@ -76,8 +76,12 @@ print *, "Files deleted from disk."
 !the matrix and matrix inverse stored on the class website.
 
 !Download the files from theochem using curl (don't store these on anvil!)
+
+print *, "Performing Matrix Multiplication Accuracy Test"
 call system("curl -s -o matrixa.dat --url http://theochem.mercer.edu/csc435/data/matrixa.dat")
 call system("curl -s -o matrixb.dat --url http://theochem.mercer.edu/csc435/data/matrixb.dat")
+
+print *, "Files loaded from theochem.mercer.edu"
 
 NDIM = 100  ! The test files are 100x100 double precision matrix and its inverse
 nthreads = 2
@@ -99,12 +103,16 @@ do i = 1, NDIM
 enddo
 close(5)
 
+print *, "Files read into program"
 ! Delete the files from disk
 call system("rm matrixa.dat matrixb.dat")
+print *, "Files deleted from disk."
+
 #endif
 
 
 ! Done with accuracy checking initializations
+
 #else
 
 ! Start the normal processing here.  Read the starting, stop, and step values
@@ -148,6 +156,7 @@ enddo
 ! Zero the matrices using Fortran 90 syntax.
 matrixa = 0.0
 matrixb = 0.0
+matrixc = 0.0
 
 call vvm(NDIM, veca, vecb, matrixa)
 call vvm(NDIM, veca, vecb, matrixb)
@@ -189,15 +198,16 @@ wall_end = walltime()
 
 trace = 0.0;
 
-!do i=1, NDIM 
-!     trace = trace + matrixc(i,i)
-!enddo
-
+#ifndef LS_TEST
+do i=1, NDIM 
+     trace = trace + matrixc(i,i)
+enddo
+#else
 residual = 0.0
 do i=1, NDIM
    residual = max(residual, abs(vecx(i)-dble(i)))
 enddo
-
+#endif
 
 ! Calculate megaflops based on CPU time and Walltime
 
@@ -233,8 +243,9 @@ if (allocated(veca)) deallocate(veca)
 if (allocated(vecb)) deallocate(vecb)
 if (allocated(vecx)) deallocate(vecx)
 
-
+#ifndef ACCURACY_TEST
 enddo
+#endif
 
 end program driver 
 
