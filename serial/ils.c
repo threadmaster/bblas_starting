@@ -45,7 +45,7 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
     int i, j, k, N, iteration;
     double sum1, sum2;
     double ZERO = 0.0;
-    int ITERATION_MAX = 10000;
+    int ITERATION_MAX = 2000;
     double *x0;
 
     N = *len;
@@ -94,6 +94,9 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
                 for (j=i+1;j<N;j++) sum2+= *(a+i*N+j)* *(x0+j); 
                 *(x+i) = ( *(b+i) - sum1 - sum2 ) / *(a+i*N+i);
             }
+
+            printf("**************** %d ************", iteration);
+            for (i=0;i<N;i++) printf(" %f      %f\n", *(x0+i), *(x+i) );
 
             iteration++;
 
