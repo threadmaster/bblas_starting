@@ -175,7 +175,7 @@ DIAG_DOMINANT = .true.
 SPARSE_MATRIX = .true.
 #endif
 
-call buildLinearSystem( NDIM, matrixc, vecb, vecx,  DIAG_DOMINANT, SPARSE_MATRIX )
+call buildLinearSystem( NDIM, matrixa, vecb, vecx,  DIAG_DOMINANT, SPARSE_MATRIX )
 
 #endif
 #endif
@@ -187,9 +187,9 @@ cpu_start = cputime()
 call mmm(nthreads, NDIM, matrixa, matrixb, matrixc)
 #else
 #ifndef ITERATIVE 
-call dls(nthreads, NDIM, matrixc, vecb, vecx)
+call dls(nthreads, NDIM, matrixa, vecb, vecx)
 #else
-call ils(nthreads, NDIM, matrixc, vecb, vecx)
+call ils(nthreads, NDIM, matrixa, vecb, vecx)
 #endif
 #endif
 
