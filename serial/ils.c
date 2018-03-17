@@ -45,7 +45,7 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
     int i, j, k, N, iteration;
     double sum1, sum2;
     double ZERO = 0.0;
-    int ITERATION_MAX = 100;
+    int ITERATION_MAX = 1000;
     double *x0;
 
     N = *len;
