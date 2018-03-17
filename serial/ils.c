@@ -95,9 +95,6 @@ void ils_( int *threads, int *len,  double *a, double *b, double *x ){
                 *(x+i) = ( *(b+i) - sum1 - sum2 ) / *(a+i*N+i);
             }
 
-            printf("**************** %d ************", iteration);
-            for (i=0;i<N;i++) printf(" %f      %f\n", *(x0+i), *(x+i) );
-
             iteration++;
 
         }
