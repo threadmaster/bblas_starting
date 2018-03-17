@@ -28,15 +28,27 @@ SPARSE_MATRIX = .false.
 
 NDIM = 100 
 nthreads = 2
-print *, "Performing DLS Accuracy Test"
+
+#ifdef ITERATIVE
+print *, "Performing Iterative Solver Accuracy Test"
+#else ITERATIVE
+print *, "Performing Direct Solver Accuracy Test"
+#endif
+
 !This portion of code is ONLY used for verifying the accuracy of the code using
 !the matrix, vector b, and solution vector x stored on the class website.
 
 !Download the files from theochem using curl (don't store these on anvil!)
 !NOTE: for strictly diagonally dominant systems append _dd to last file name, e.g. -- linsolve_a_dd.dat
+#ifdef DIAGDOM
+call system("curl -s -o linsolve_a.dat --url http://theochem.mercer.edu/csc435/data/linsolve_a_dd.dat")
+call system("curl -s -o linsolve_b.dat --url http://theochem.mercer.edu/csc435/data/linsolve_b_dd.dat")
+call system("curl -s -o linsolve_x.dat --url http://theochem.mercer.edu/csc435/data/linsolve_x_dd.dat")
+#else
 call system("curl -s -o linsolve_a.dat --url http://theochem.mercer.edu/csc435/data/linsolve_a.dat")
 call system("curl -s -o linsolve_b.dat --url http://theochem.mercer.edu/csc435/data/linsolve_b.dat")
 call system("curl -s -o linsolve_x.dat --url http://theochem.mercer.edu/csc435/data/linsolve_x.dat")
+#endif
 
 print *, "Files loaded from theochem.mercer.edu"
 
