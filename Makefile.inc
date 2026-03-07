@@ -3,7 +3,7 @@
 F90 = gfortran 
 CC  = gcc
 FFLAGS = -cpp -O2 
-CFLAGS = -scd=c18 -O2 -fopenmp
+CFLAGS = -std=c18 -O2 -fopenmp
 MYLIBS = -L./openmp -lopenmp_bblas -L./pthreads -lpthreads_bblas\
          -L./serial -lserial_bblas -L./lbstime -llbstime 
 SYSLIBS = -lgomp -lpthread
