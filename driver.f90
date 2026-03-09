@@ -228,7 +228,11 @@ enddo
 !
 ! Matrix multiplication is 2*N**3 flops
 ! Gaussian Elimination with Partial Pivoting is approximately 2*N**2+(2/3)*N**3
-! flops and and LU decomposition is approximately (2/3)*N**3 flops
+! flops and and LU decomposition is approximately (2/3)*N**3 flops.  Check Golub
+! and van Load pp 112, 119 for quadratic term and full pivoting.
+! The ILS for a square system should require 2*I*N**2 operations where I is the 
+! number of iterations.
+!
 
 #ifndef LS_TEST
 ! For matrix multiplication
